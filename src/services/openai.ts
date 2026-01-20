@@ -24,7 +24,7 @@ export async function analyzeSpanishResponse(
   const openai = getClient();
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     messages: [
       {
         role: "system",
@@ -58,7 +58,7 @@ export async function generatePracticePrompt(
   const openai = getClient();
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     messages: [
       {
         role: "system",
