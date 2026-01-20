@@ -1,0 +1,43 @@
+{
+  "name": "telegram-spanish-teacher",
+  "version": "1.0.0",
+  "description": "A Telegram bot for Spanish speaking practice with AI-powered feedback",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "spanish",
+    "language-learning",
+    "speech-to-text"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.32.0",
+    "@grammyjs/files": "^1.2.0",
+    "express": "^5.2.1",
+    "grammy": "^1.39.3",
+    "node-cron": "^4.2.1",
+    "openai": "^6.16.0",
+    "pg": "^8.17.2",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.9",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.16.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
