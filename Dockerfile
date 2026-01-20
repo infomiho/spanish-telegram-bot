@@ -1,44 +1,37 @@
 # Build stage
 FROM node:20-alpine AS builder
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (including dev)
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
 COPY tsconfig.json ./
 COPY src ./src
 
-# Build TypeScript
-RUN npm run build
+RUN pnpm build
 
 # Production stage
 FROM node:20-alpine AS production
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
-# Copy built code from builder
 COPY --from=builder /app/dist ./dist
 
-# Set environment
 ENV NODE_ENV=production
 
-# Expose port
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-# Start the application
 CMD ["node", "dist/index.js"]
