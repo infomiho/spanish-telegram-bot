@@ -20,11 +20,13 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
 
   const user = await getUser(chatId);
   if (!user) {
+    processingMessages.delete(messageId);
     await ctx.reply("Please use /start first to register.");
     return;
   }
 
   if (!user.last_prompt) {
+    processingMessages.delete(messageId);
     await ctx.reply(
       "You don't have an active prompt. Use /new to get a practice prompt first!"
     );
@@ -33,17 +35,27 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
 
   const voice = ctx.message?.voice;
   if (!voice) {
+    processingMessages.delete(messageId);
     await ctx.reply("I couldn't find the voice message. Please try again.");
     return;
   }
 
+  // Send immediate acknowledgment, then process in background
   await ctx.reply("🎧 Processing your voice message...");
 
+  // Process in background - don't await
+  processVoiceInBackground(ctx, user.last_prompt, user.difficulty, messageId);
+}
+
+async function processVoiceInBackground(
+  ctx: BotContext,
+  lastPrompt: string,
+  difficulty: "beginner" | "intermediate" | "advanced",
+  messageId: number
+): Promise<void> {
   try {
     const file = await ctx.getFile();
     const filePath = await file.download();
-
-    await ctx.reply("📝 Transcribing your Spanish...");
 
     const transcription = await transcribeAudio(filePath);
 
@@ -54,12 +66,10 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
       return;
     }
 
-    await ctx.reply("🤔 Analyzing your response...");
-
     const analysis = await analyzeSpanishResponse(
-      user.last_prompt,
+      lastPrompt,
       transcription,
-      user.difficulty
+      difficulty
     );
 
     await sendAnalysisResponse(ctx, analysis);
@@ -69,7 +79,7 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
       "Sorry, I had trouble processing your voice message. Please try again."
     );
   } finally {
-    // Clean up after processing (with delay to handle late retries)
+    // Keep in set for a while to handle any late retries
     setTimeout(() => processingMessages.delete(messageId), 60000);
   }
 }
