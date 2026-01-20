@@ -55,9 +55,9 @@ async function main(): Promise<void> {
       res.json({ status: "ok" });
     });
 
-    // Webhook endpoint
+    // Webhook endpoint (POST only - Telegram sends POST requests)
     const webhookPath = `/webhook/${BOT_TOKEN}`;
-    app.use(webhookPath, webhookCallback(bot, "express"));
+    app.post(webhookPath, webhookCallback(bot, "express"));
 
     // Error handler
     const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
