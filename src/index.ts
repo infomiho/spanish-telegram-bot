@@ -1,8 +1,16 @@
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import { webhookCallback } from "grammy";
 import { createBot } from "./bot.js";
 import { initializeDatabase, closeDatabase } from "./db/index.js";
 import { startScheduler, stopScheduler } from "./services/scheduler.js";
+
+// Catch unhandled errors
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection:", reason);
+});
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught exception:", error);
+});
 
 const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN;
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -33,6 +41,12 @@ async function main(): Promise<void> {
     // Production: Use webhooks
     const app = express();
 
+    // Request logging
+    app.use((req, _res, next) => {
+      console.log(`${req.method} ${req.path}`);
+      next();
+    });
+
     // Health check endpoint
     app.get("/health", (_req, res) => {
       res.json({ status: "ok" });
@@ -41,6 +55,13 @@ async function main(): Promise<void> {
     // Webhook endpoint
     const webhookPath = `/webhook/${BOT_TOKEN}`;
     app.post(webhookPath, webhookCallback(bot, "express"));
+
+    // Error handler
+    const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+      console.error("Express error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    };
+    app.use(errorHandler);
 
     // Start server
     app.listen(PORT, () => {
