@@ -33,15 +33,14 @@ async function main(): Promise<void> {
     // Production: Use webhooks
     const app = express();
 
-    app.use(express.json());
-
     // Health check endpoint
     app.get("/health", (_req, res) => {
       res.json({ status: "ok" });
     });
 
     // Webhook endpoint
-    app.use(`/webhook/${BOT_TOKEN}`, webhookCallback(bot, "express"));
+    const webhookPath = `/webhook/${BOT_TOKEN}`;
+    app.post(webhookPath, webhookCallback(bot, "express"));
 
     // Start server
     app.listen(PORT, () => {
