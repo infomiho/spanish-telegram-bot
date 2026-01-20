@@ -3,9 +3,20 @@ import { getUser } from "../db/index.js";
 import { transcribeAudio } from "../services/elevenlabs.js";
 import { analyzeSpanishResponse } from "../services/openai.js";
 
+// Track messages being processed to prevent duplicates from Telegram retries
+const processingMessages = new Set<number>();
+
 export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
   const chatId = ctx.chat?.id;
-  if (!chatId) return;
+  const messageId = ctx.message?.message_id;
+  if (!chatId || !messageId) return;
+
+  // Prevent duplicate processing
+  if (processingMessages.has(messageId)) {
+    console.log(`Message ${messageId} already being processed, skipping`);
+    return;
+  }
+  processingMessages.add(messageId);
 
   const user = await getUser(chatId);
   if (!user) {
@@ -57,6 +68,9 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
     await ctx.reply(
       "Sorry, I had trouble processing your voice message. Please try again."
     );
+  } finally {
+    // Clean up after processing (with delay to handle late retries)
+    setTimeout(() => processingMessages.delete(messageId), 60000);
   }
 }
 

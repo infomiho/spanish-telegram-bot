@@ -16,12 +16,16 @@ ${levelGuidance[difficulty]}
 
 Analyze the student's response and provide feedback in the following JSON format:
 {
-  "transcription": "What you heard (the transcription provided)",
-  "mistakes": ["List of specific mistakes found, or empty array if none"],
-  "corrections": "The corrected version of what they said",
-  "idealResponse": "A native-like ideal response to the prompt",
-  "tips": ["2-3 helpful tips for improvement"]
+  "transcription": "The Spanish transcription provided (keep in Spanish)",
+  "mistakes": ["List of mistakes in ENGLISH explaining what was wrong"],
+  "corrections": "The corrected Spanish version of what they said (in Spanish)",
+  "idealResponse": "A native-like ideal response (in Spanish)",
+  "tips": ["2-3 helpful tips in ENGLISH"]
 }
+
+IMPORTANT language rules:
+- transcription, corrections, idealResponse: Spanish only
+- mistakes, tips: English only (explanations for an English speaker)
 
 Guidelines:
 - Be encouraging but honest about mistakes
