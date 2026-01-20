@@ -6,6 +6,7 @@ import { fetchRandomHeadline } from "./news.js";
 import { generatePracticePrompt } from "./openai.js";
 
 let scheduledTask: cron.ScheduledTask | null = null;
+let isRunning = false;
 
 export function startScheduler(bot: Bot<BotContext>): void {
   if (scheduledTask) {
@@ -15,7 +16,17 @@ export function startScheduler(bot: Bot<BotContext>): void {
 
   // Run every minute to check for users due their daily prompt
   scheduledTask = cron.schedule("* * * * *", async () => {
-    await sendDailyPrompts(bot);
+    // Prevent overlapping runs
+    if (isRunning) {
+      console.log("Previous scheduler run still in progress, skipping");
+      return;
+    }
+    isRunning = true;
+    try {
+      await sendDailyPrompts(bot);
+    } finally {
+      isRunning = false;
+    }
   });
 
   console.log("Scheduler started - checking every minute for users due prompts");
@@ -30,19 +41,14 @@ export function stopScheduler(): void {
 }
 
 async function sendDailyPrompts(bot: Bot<BotContext>): Promise<void> {
-  const now = new Date();
-  const currentHour = now.getUTCHours();
-
   try {
-    const users = await getUsersDueForPrompt(currentHour);
+    const users = await getUsersDueForPrompt();
 
     if (users.length === 0) {
       return;
     }
 
-    console.log(
-      `Sending daily prompts to ${users.length} user(s) at hour ${currentHour}`
-    );
+    console.log(`Sending daily prompts to ${users.length} user(s)`);
 
     for (const user of users) {
       try {

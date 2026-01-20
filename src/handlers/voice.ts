@@ -1,3 +1,4 @@
+import * as fs from "fs/promises";
 import type { BotContext, SpanishAnalysis } from "../types/index.js";
 import { getUser } from "../db/index.js";
 import { transcribeAudio } from "../services/elevenlabs.js";
@@ -53,9 +54,10 @@ async function processVoiceInBackground(
   difficulty: "beginner" | "intermediate" | "advanced",
   messageId: number
 ): Promise<void> {
+  let filePath: string | null = null;
   try {
     const file = await ctx.getFile();
-    const filePath = await file.download();
+    filePath = await file.download();
 
     const transcription = await transcribeAudio(filePath);
 
@@ -79,6 +81,10 @@ async function processVoiceInBackground(
       "Sorry, I had trouble processing your voice message. Please try again."
     );
   } finally {
+    // Clean up temp file
+    if (filePath) {
+      fs.unlink(filePath).catch(() => {});
+    }
     // Keep in set for a while to handle any late retries
     setTimeout(() => processingMessages.delete(messageId), 60000);
   }

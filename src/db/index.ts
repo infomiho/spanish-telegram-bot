@@ -93,12 +93,13 @@ export async function updateLastPrompt(
   );
 }
 
-export async function getUsersDueForPrompt(hour: number): Promise<User[]> {
+export async function getUsersDueForPrompt(): Promise<User[]> {
+  // Get users where current hour in their timezone matches their preferred hour
+  // and they haven't received a prompt today (in their timezone)
   const result = await getPool().query<User>(
     `SELECT * FROM users
-     WHERE preferred_hour = $1
-     AND (last_prompt_at IS NULL OR last_prompt_at < CURRENT_DATE)`,
-    [hour]
+     WHERE EXTRACT(HOUR FROM NOW() AT TIME ZONE timezone) = preferred_hour
+     AND (last_prompt_at IS NULL OR last_prompt_at AT TIME ZONE timezone < CURRENT_DATE AT TIME ZONE timezone)`
   );
   return result.rows;
 }

@@ -43,8 +43,37 @@ async function handleSettingsCallback(
     case "timezone":
       await showTimezoneOptions(ctx);
       break;
+    case "back":
+      await showMainSettings(ctx);
+      break;
   }
   await ctx.answerCallbackQuery();
+}
+
+async function showMainSettings(ctx: BotContext): Promise<void> {
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
+  const user = await getUser(chatId);
+  if (!user) return;
+
+  const keyboard = new InlineKeyboard()
+    .text("🕐 Change Time", "settings:time")
+    .row()
+    .text("📊 Change Difficulty", "settings:difficulty")
+    .row()
+    .text("🌍 Change Timezone", "settings:timezone");
+
+  await ctx.editMessageText(
+    `⚙️ **Your Settings**
+
+• Daily prompt time: ${user.preferred_hour}:00 ${user.timezone}
+• Difficulty level: ${user.difficulty}
+• Timezone: ${user.timezone}
+
+What would you like to change?`,
+    { parse_mode: "Markdown", reply_markup: keyboard }
+  );
 }
 
 async function showTimeOptions(ctx: BotContext): Promise<void> {
