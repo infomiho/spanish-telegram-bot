@@ -47,6 +47,9 @@ async function main(): Promise<void> {
       next();
     });
 
+    // Parse JSON bodies
+    app.use(express.json());
+
     // Health check endpoint
     app.get("/health", (_req, res) => {
       res.json({ status: "ok" });
@@ -54,7 +57,7 @@ async function main(): Promise<void> {
 
     // Webhook endpoint
     const webhookPath = `/webhook/${BOT_TOKEN}`;
-    app.post(webhookPath, webhookCallback(bot, "express"));
+    app.use(webhookPath, webhookCallback(bot, "express"));
 
     // Error handler
     const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
