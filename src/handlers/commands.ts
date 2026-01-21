@@ -1,8 +1,9 @@
-import type { BotContext, Difficulty } from "../types/index.js";
-import { createUser, getUser, updateLastPrompt } from "../db/index.js";
+import type { BotContext } from "../types/index.js";
+import { createUser, updateLastPrompt } from "../db/index.js";
 import { fetchRandomTopic } from "../services/topics.js";
 import { generatePracticePrompt } from "../services/openai.js";
 import { InlineKeyboard } from "grammy";
+import { createSettingsKeyboard } from "./shared.js";
 
 export async function handleStart(ctx: BotContext): Promise<void> {
   const chatId = ctx.chat?.id;
@@ -34,14 +35,8 @@ Let's get started! Use /new to get your first prompt.`
 }
 
 export async function handleNew(ctx: BotContext): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
-
-  const user = await getUser(chatId);
-  if (!user) {
-    await ctx.reply("Please use /start first to register.");
-    return;
-  }
+  const user = ctx.user!;
+  const chatId = ctx.chatId!;
 
   await ctx.reply("Generating a new practice prompt for you...");
 
@@ -68,21 +63,7 @@ _Respond with a voice message in Spanish!_`,
 }
 
 export async function handleSettings(ctx: BotContext): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
-
-  const user = await getUser(chatId);
-  if (!user) {
-    await ctx.reply("Please use /start first to register.");
-    return;
-  }
-
-  const keyboard = new InlineKeyboard()
-    .text("🕐 Change Time", "settings:time")
-    .row()
-    .text("📊 Change Difficulty", "settings:difficulty")
-    .row()
-    .text("🌍 Change Timezone", "settings:timezone");
+  const user = ctx.user!;
 
   await ctx.reply(
     `⚙️ **Your Settings**
@@ -92,7 +73,7 @@ export async function handleSettings(ctx: BotContext): Promise<void> {
 • Timezone: ${user.timezone}
 
 What would you like to change?`,
-    { parse_mode: "Markdown", reply_markup: keyboard }
+    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard() }
   );
 }
 

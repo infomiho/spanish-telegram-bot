@@ -104,11 +104,6 @@ export async function getUsersDueForPrompt(): Promise<User[]> {
   return result.rows;
 }
 
-export async function getAllUsers(): Promise<User[]> {
-  const result = await getPool().query<User>("SELECT * FROM users");
-  return result.rows;
-}
-
 export async function closeDatabase(): Promise<void> {
   if (pool) {
     await pool.end();

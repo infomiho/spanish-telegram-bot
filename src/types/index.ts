@@ -1,7 +1,10 @@
 import type { Context } from "grammy";
 import type { FileFlavor } from "@grammyjs/files";
 
-export type BotContext = FileFlavor<Context>;
+export type BotContext = FileFlavor<Context> & {
+  chatId?: number;
+  user?: User;
+};
 
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 

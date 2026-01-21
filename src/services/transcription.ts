@@ -1,31 +1,24 @@
 import * as fs from "fs";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
-import OpenAI from "openai";
+import { getOpenAIClient } from "./openai-client.js";
 
-const execAsync = promisify(exec);
-
-let client: OpenAI | null = null;
-
-function getClient(): OpenAI {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return client;
-}
+const execFileAsync = promisify(execFile);
 
 async function convertToMp3(inputPath: string): Promise<string> {
   const outputPath = `${inputPath}.mp3`;
 
-  await execAsync(`ffmpeg -i "${inputPath}" -acodec libmp3lame -y "${outputPath}"`);
+  await execFileAsync("ffmpeg", [
+    "-i", inputPath,
+    "-acodec", "libmp3lame",
+    "-y", outputPath,
+  ]);
 
   return outputPath;
 }
 
 export async function transcribeAudio(filePath: string): Promise<string> {
-  const openai = getClient();
+  const openai = getOpenAIClient();
 
   // Convert to mp3 (Telegram sends .oga which OpenAI may not support)
   const mp3Path = await convertToMp3(filePath);

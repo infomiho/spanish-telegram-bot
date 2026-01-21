@@ -1,6 +1,5 @@
 import * as fs from "fs/promises";
 import type { BotContext, SpanishAnalysis } from "../types/index.js";
-import { getUser } from "../db/index.js";
 import { transcribeAudio } from "../services/transcription.js";
 import { analyzeSpanishResponse } from "../services/openai.js";
 
@@ -8,9 +7,9 @@ import { analyzeSpanishResponse } from "../services/openai.js";
 const processingMessages = new Set<number>();
 
 export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
-  const chatId = ctx.chat?.id;
+  const user = ctx.user!;
   const messageId = ctx.message?.message_id;
-  if (!chatId || !messageId) return;
+  if (!messageId) return;
 
   // Prevent duplicate processing
   if (processingMessages.has(messageId)) {
@@ -18,13 +17,6 @@ export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
     return;
   }
   processingMessages.add(messageId);
-
-  const user = await getUser(chatId);
-  if (!user) {
-    processingMessages.delete(messageId);
-    await ctx.reply("Please use /start first to register.");
-    return;
-  }
 
   if (!user.last_prompt) {
     processingMessages.delete(messageId);

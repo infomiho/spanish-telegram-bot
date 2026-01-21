@@ -1,20 +1,9 @@
-import OpenAI from "openai";
 import type { Difficulty, SpanishAnalysis } from "../types/index.js";
 import {
   getSpanishTeacherPrompt,
   getPromptGeneratorPrompt,
 } from "../prompts/spanish-teacher.js";
-
-let client: OpenAI | null = null;
-
-function getClient(): OpenAI {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return client;
-}
+import { getOpenAIClient } from "./openai-client.js";
 
 const spanishAnalysisSchema = {
   type: "json_schema" as const,
@@ -77,7 +66,7 @@ export async function analyzeSpanishResponse(
   transcription: string,
   difficulty: Difficulty
 ): Promise<SpanishAnalysis> {
-  const openai = getClient();
+  const openai = getOpenAIClient();
 
   const response = await openai.chat.completions.create({
     model: "gpt-5.2",
@@ -107,7 +96,7 @@ export async function generatePracticePrompt(
   topic: string,
   difficulty: Difficulty
 ): Promise<string> {
-  const openai = getClient();
+  const openai = getOpenAIClient();
 
   const response = await openai.chat.completions.create({
     model: "gpt-5.2",

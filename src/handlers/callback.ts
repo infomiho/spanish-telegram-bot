@@ -1,13 +1,11 @@
 import type { BotContext, Difficulty } from "../types/index.js";
-import { updateUserSettings, getUser } from "../db/index.js";
+import { updateUserSettings } from "../db/index.js";
 import { InlineKeyboard } from "grammy";
+import { createSettingsKeyboard } from "./shared.js";
 
 export async function handleCallback(ctx: BotContext): Promise<void> {
   const data = ctx.callbackQuery?.data;
   if (!data) return;
-
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
 
   const [category, action] = data.split(":");
 
@@ -51,18 +49,7 @@ async function handleSettingsCallback(
 }
 
 async function showMainSettings(ctx: BotContext): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
-
-  const user = await getUser(chatId);
-  if (!user) return;
-
-  const keyboard = new InlineKeyboard()
-    .text("🕐 Change Time", "settings:time")
-    .row()
-    .text("📊 Change Difficulty", "settings:difficulty")
-    .row()
-    .text("🌍 Change Timezone", "settings:timezone");
+  const user = ctx.user!;
 
   await ctx.editMessageText(
     `⚙️ **Your Settings**
@@ -72,7 +59,7 @@ async function showMainSettings(ctx: BotContext): Promise<void> {
 • Timezone: ${user.timezone}
 
 What would you like to change?`,
-    { parse_mode: "Markdown", reply_markup: keyboard }
+    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard() }
   );
 }
 
@@ -133,8 +120,7 @@ async function showTimezoneOptions(ctx: BotContext): Promise<void> {
 }
 
 async function handleTimeCallback(ctx: BotContext, hour: string): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
+  const chatId = ctx.chatId!;
 
   const preferredHour = parseInt(hour, 10);
   await updateUserSettings(chatId, { preferred_hour: preferredHour });
@@ -149,8 +135,7 @@ async function handleDifficultyCallback(
   ctx: BotContext,
   level: string
 ): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
+  const chatId = ctx.chatId!;
 
   const difficulty = level as Difficulty;
   await updateUserSettings(chatId, { difficulty });
@@ -171,8 +156,7 @@ async function handleTimezoneCallback(
   ctx: BotContext,
   timezone: string
 ): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
+  const chatId = ctx.chatId!;
 
   await updateUserSettings(chatId, { timezone });
 
