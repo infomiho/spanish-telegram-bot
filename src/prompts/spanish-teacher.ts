@@ -57,7 +57,7 @@ ${levelGuidance[difficulty]}
 Requirements:
 - The prompt should be in English (the student will respond in Spanish)
 - Make it conversational and engaging
-- Relate it to the news headline provided when possible
+- Use the topic as inspiration but make it personal and relatable
 - Keep the prompt concise (1-2 sentences)
 - Don't include instructions like "respond in Spanish" - just the prompt itself
 

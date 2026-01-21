@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import type { BotContext, SpanishAnalysis } from "../types/index.js";
 import { getUser } from "../db/index.js";
-import { transcribeAudio } from "../services/elevenlabs.js";
+import { transcribeAudio } from "../services/transcription.js";
 import { analyzeSpanishResponse } from "../services/openai.js";
 
 // Track messages being processed to prevent duplicates from Telegram retries

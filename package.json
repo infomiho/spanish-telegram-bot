@@ -20,14 +20,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^2.32.0",
     "@grammyjs/files": "^1.2.0",
     "express": "^5.2.1",
     "grammy": "^1.39.3",
     "node-cron": "^4.2.1",
     "openai": "^6.16.0",
-    "pg": "^8.17.2",
-    "rss-parser": "^3.13.0"
+    "pg": "^8.17.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

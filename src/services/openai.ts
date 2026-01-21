@@ -16,6 +16,43 @@ function getClient(): OpenAI {
   return client;
 }
 
+const spanishAnalysisSchema = {
+  type: "json_schema" as const,
+  json_schema: {
+    name: "spanish_analysis",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        transcription: {
+          type: "string",
+          description: "The Spanish transcription (kept in Spanish)",
+        },
+        mistakes: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of mistakes explained in English",
+        },
+        corrections: {
+          type: "string",
+          description: "The corrected Spanish version",
+        },
+        idealResponse: {
+          type: "string",
+          description: "A native-like ideal response in Spanish",
+        },
+        tips: {
+          type: "array",
+          items: { type: "string" },
+          description: "2-3 helpful tips in English",
+        },
+      },
+      required: ["transcription", "mistakes", "corrections", "idealResponse", "tips"],
+      additionalProperties: false,
+    },
+  },
+};
+
 export async function analyzeSpanishResponse(
   originalPrompt: string,
   transcription: string,
@@ -39,7 +76,7 @@ Student's Spanish response (transcribed): "${transcription}"
 Please analyze this response and provide feedback.`,
       },
     ],
-    response_format: { type: "json_object" },
+    response_format: spanishAnalysisSchema,
   });
 
   const content = response.choices[0]?.message?.content;
@@ -47,12 +84,11 @@ Please analyze this response and provide feedback.`,
     throw new Error("No response from OpenAI");
   }
 
-  const parsed = JSON.parse(content) as SpanishAnalysis;
-  return parsed;
+  return JSON.parse(content) as SpanishAnalysis;
 }
 
 export async function generatePracticePrompt(
-  newsHeadline: string,
+  topic: string,
   difficulty: Difficulty
 ): Promise<string> {
   const openai = getClient();
@@ -66,7 +102,7 @@ export async function generatePracticePrompt(
       },
       {
         role: "user",
-        content: `News headline for inspiration: "${newsHeadline}"
+        content: `Topic for inspiration: "${topic}"
 
 Generate a practice prompt in English that the student should respond to in Spanish.`,
       },

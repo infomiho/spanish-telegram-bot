@@ -1,6 +1,6 @@
 import type { BotContext, Difficulty } from "../types/index.js";
 import { createUser, getUser, updateLastPrompt } from "../db/index.js";
-import { fetchRandomHeadline } from "../services/news.js";
+import { fetchRandomTopic } from "../services/topics.js";
 import { generatePracticePrompt } from "../services/openai.js";
 import { InlineKeyboard } from "grammy";
 
@@ -46,8 +46,8 @@ export async function handleNew(ctx: BotContext): Promise<void> {
   await ctx.reply("Generating a new practice prompt for you...");
 
   try {
-    const headline = await fetchRandomHeadline();
-    const prompt = await generatePracticePrompt(headline.title, user.difficulty);
+    const topic = await fetchRandomTopic();
+    const prompt = await generatePracticePrompt(topic.text, user.difficulty);
 
     await updateLastPrompt(chatId, prompt);
 

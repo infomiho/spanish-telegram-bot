@@ -35,8 +35,3 @@ export interface SpanishAnalysis {
   tips: string[];
 }
 
-export interface NewsHeadline {
-  title: string;
-  link: string;
-  source: string;
-}
