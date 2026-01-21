@@ -26,28 +26,47 @@ const spanishAnalysisSchema = {
       properties: {
         transcription: {
           type: "string",
-          description: "The Spanish transcription (kept in Spanish)",
+          description: "The Spanish transcription of what the student said",
         },
         mistakes: {
           type: "array",
           items: { type: "string" },
-          description: "List of mistakes explained in English",
+          description: "Array of specific mistakes explained in English",
         },
         corrections: {
           type: "string",
-          description: "The corrected Spanish version",
+          description: "The corrected version of the student's sentence in Spanish",
         },
         idealResponse: {
           type: "string",
-          description: "A native-like ideal response in Spanish",
+          description: "A natural, native-level answer in Spanish",
         },
         tips: {
           type: "array",
           items: { type: "string" },
-          description: "2-3 helpful tips in English",
+          description: "2-3 actionable tips in English",
         },
       },
       required: ["transcription", "mistakes", "corrections", "idealResponse", "tips"],
+      additionalProperties: false,
+    },
+  },
+};
+
+const promptGeneratorSchema = {
+  type: "json_schema" as const,
+  json_schema: {
+    name: "practice_prompt",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        prompt: {
+          type: "string",
+          description: "The role-play scenario prompt in English (max 2 sentences)",
+        },
+      },
+      required: ["prompt"],
       additionalProperties: false,
     },
   },
@@ -69,11 +88,8 @@ export async function analyzeSpanishResponse(
       },
       {
         role: "user",
-        content: `Original English prompt: "${originalPrompt}"
-
-Student's Spanish response (transcribed): "${transcription}"
-
-Please analyze this response and provide feedback.`,
+        content: `Original English Prompt: "${originalPrompt}"
+Student's Spanish Response: "${transcription}"`,
       },
     ],
     response_format: spanishAnalysisSchema,
@@ -102,11 +118,12 @@ export async function generatePracticePrompt(
       },
       {
         role: "user",
-        content: `Topic for inspiration: "${topic}"
+        content: `Use this topic as loose inspiration (you can diverge from it): "${topic}"
 
-Generate a practice prompt in English that the student should respond to in Spanish.`,
+Generate a role-play scenario prompt.`,
       },
     ],
+    response_format: promptGeneratorSchema,
   });
 
   const content = response.choices[0]?.message?.content;
@@ -114,5 +131,6 @@ Generate a practice prompt in English that the student should respond to in Span
     throw new Error("No response from OpenAI");
   }
 
-  return content.trim();
+  const parsed = JSON.parse(content) as { prompt: string };
+  return parsed.prompt;
 }
