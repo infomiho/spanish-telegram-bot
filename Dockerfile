@@ -2,6 +2,7 @@
 FROM node:20-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 
@@ -18,6 +19,7 @@ RUN pnpm build
 FROM node:20-alpine AS production
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 

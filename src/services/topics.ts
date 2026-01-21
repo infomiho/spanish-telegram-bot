@@ -52,6 +52,8 @@ export async function fetchRandomTopic(): Promise<Topic> {
     // Decode HTML entities in the question
     const text = decodeHtmlEntities(trivia.question);
 
+    console.log(`Trivia selected [${trivia.category}]: ${text}`);
+
     return {
       text,
       category: trivia.category,
@@ -74,6 +76,7 @@ function decodeHtmlEntities(text: string): string {
 }
 
 function getDefaultTopic(): Topic {
+  console.log("Using default topic (trivia fetch failed)");
   const defaultTopics = [
     { text: "What's your favorite way to spend a weekend?", category: "Lifestyle" },
     { text: "Describe your dream vacation destination", category: "Travel" },

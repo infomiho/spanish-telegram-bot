@@ -1,5 +1,9 @@
 import * as fs from "fs";
+import { exec } from "child_process";
+import { promisify } from "util";
 import OpenAI from "openai";
+
+const execAsync = promisify(exec);
 
 let client: OpenAI | null = null;
 
@@ -12,14 +16,30 @@ function getClient(): OpenAI {
   return client;
 }
 
+async function convertToMp3(inputPath: string): Promise<string> {
+  const outputPath = inputPath.replace(/\.[^/.]+$/, ".mp3");
+
+  await execAsync(`ffmpeg -i "${inputPath}" -acodec libmp3lame -y "${outputPath}"`);
+
+  return outputPath;
+}
+
 export async function transcribeAudio(filePath: string): Promise<string> {
   const openai = getClient();
 
-  const transcription = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(filePath),
-    model: "gpt-4o-mini-transcribe",
-    language: "es",
-  });
+  // Convert to mp3 (Telegram sends .oga which OpenAI may not support)
+  const mp3Path = await convertToMp3(filePath);
 
-  return transcription.text || "";
+  try {
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(mp3Path),
+      model: "gpt-4o-mini-transcribe",
+      language: "es",
+    });
+
+    return transcription.text || "";
+  } finally {
+    // Clean up converted file
+    fs.promises.unlink(mp3Path).catch(() => {});
+  }
 }
