@@ -7,7 +7,7 @@ import { analyzeSpanishResponse } from "../services/openai.js";
 const processingMessages = new Set<number>();
 
 export async function handleVoiceMessage(ctx: BotContext): Promise<void> {
-  const user = ctx.user!;
+  const user = ctx.dbUser!;
   const messageId = ctx.message?.message_id;
   if (!messageId) return;
 

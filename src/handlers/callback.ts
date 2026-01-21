@@ -49,7 +49,7 @@ async function handleSettingsCallback(
 }
 
 async function showMainSettings(ctx: BotContext): Promise<void> {
-  const user = ctx.user!;
+  const user = ctx.dbUser!;
 
   await ctx.editMessageText(
     `⚙️ **Your Settings**

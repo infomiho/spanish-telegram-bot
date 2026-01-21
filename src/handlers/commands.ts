@@ -35,7 +35,7 @@ Let's get started! Use /new to get your first prompt.`
 }
 
 export async function handleNew(ctx: BotContext): Promise<void> {
-  const user = ctx.user!;
+  const user = ctx.dbUser!;
   const chatId = ctx.chatId!;
 
   await ctx.reply("Generating a new practice prompt for you...");
@@ -63,7 +63,7 @@ _Respond with a voice message in Spanish!_`,
 }
 
 export async function handleSettings(ctx: BotContext): Promise<void> {
-  const user = ctx.user!;
+  const user = ctx.dbUser!;
 
   await ctx.reply(
     `⚙️ **Your Settings**

@@ -18,8 +18,7 @@ export async function requireUser(
     return;
   }
 
-  ctx.chatId = chatId;
-  ctx.user = user;
+  ctx.dbUser = user;
 
   await next();
 }
