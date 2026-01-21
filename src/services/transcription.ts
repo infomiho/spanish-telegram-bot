@@ -17,7 +17,7 @@ function getClient(): OpenAI {
 }
 
 async function convertToMp3(inputPath: string): Promise<string> {
-  const outputPath = inputPath.replace(/\.[^/.]+$/, ".mp3");
+  const outputPath = `${inputPath}.mp3`;
 
   await execAsync(`ffmpeg -i "${inputPath}" -acodec libmp3lame -y "${outputPath}"`);
 
