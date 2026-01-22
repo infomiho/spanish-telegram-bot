@@ -1,5 +1,5 @@
 import pg from "pg";
-import { CREATE_USERS_TABLE, CREATE_INDEXES } from "./schema.js";
+import { CREATE_USERS_TABLE, CREATE_INDEXES, ADD_IS_SUBSCRIBED_COLUMN } from "./schema.js";
 import type {
   User,
   CreateUserInput,
@@ -25,6 +25,7 @@ export async function initializeDatabase(): Promise<void> {
   try {
     await client.query(CREATE_USERS_TABLE);
     await client.query(CREATE_INDEXES);
+    await client.query(ADD_IS_SUBSCRIBED_COLUMN);
     console.log("Database initialized successfully");
   } finally {
     client.release();
@@ -35,7 +36,7 @@ export async function createUser(input: CreateUserInput): Promise<User> {
   const result = await getPool().query<User>(
     `INSERT INTO users (chat_id, username)
      VALUES ($1, $2)
-     ON CONFLICT (chat_id) DO UPDATE SET username = $2
+     ON CONFLICT (chat_id) DO UPDATE SET username = $2, is_subscribed = true
      RETURNING *`,
     [input.chat_id, input.username]
   );
@@ -55,7 +56,7 @@ export async function updateUserSettings(
   settings: UpdateUserSettings
 ): Promise<User | null> {
   const updates: string[] = [];
-  const values: (string | number)[] = [];
+  const values: (string | number | boolean)[] = [];
   let paramIndex = 1;
 
   if (settings.preferred_hour !== undefined) {
@@ -69,6 +70,10 @@ export async function updateUserSettings(
   if (settings.difficulty !== undefined) {
     updates.push(`difficulty = $${paramIndex++}`);
     values.push(settings.difficulty);
+  }
+  if (settings.is_subscribed !== undefined) {
+    updates.push(`is_subscribed = $${paramIndex++}`);
+    values.push(settings.is_subscribed);
   }
 
   if (updates.length === 0) {
@@ -96,9 +101,11 @@ export async function updateLastPrompt(
 export async function getUsersDueForPrompt(): Promise<User[]> {
   // Get users where current hour in their timezone matches their preferred hour
   // and they haven't received a prompt today (in their timezone)
+  // and they are subscribed to daily messages
   const result = await getPool().query<User>(
     `SELECT * FROM users
-     WHERE EXTRACT(HOUR FROM NOW() AT TIME ZONE timezone) = preferred_hour
+     WHERE is_subscribed = true
+     AND EXTRACT(HOUR FROM NOW() AT TIME ZONE timezone) = preferred_hour
      AND (last_prompt_at IS NULL OR last_prompt_at AT TIME ZONE timezone < CURRENT_DATE AT TIME ZONE timezone)`
   );
   return result.rows;

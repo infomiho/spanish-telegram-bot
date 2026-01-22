@@ -65,15 +65,20 @@ _Respond with a voice message in Spanish!_`,
 export async function handleSettings(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser!;
 
+  const subscriptionStatus = user.is_subscribed
+    ? "✅ Subscribed to daily messages"
+    : "⏸️ Daily messages paused";
+
   await ctx.reply(
     `⚙️ **Your Settings**
 
 • Daily prompt time: ${user.preferred_hour}:00 ${user.timezone}
 • Difficulty level: ${user.difficulty}
 • Timezone: ${user.timezone}
+• ${subscriptionStatus}
 
 What would you like to change?`,
-    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard() }
+    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard(user.is_subscribed) }
   );
 }
 
@@ -88,7 +93,7 @@ export async function handleHelp(ctx: BotContext): Promise<void> {
 
 **Commands:**
 /new - Get a new practice prompt
-/settings - Change preferences (time, difficulty)
+/settings - Change preferences (time, difficulty, pause/resume daily messages)
 /help - Show this message
 
 **Tips for best results:**

@@ -41,6 +41,12 @@ async function handleSettingsCallback(
     case "timezone":
       await showTimezoneOptions(ctx);
       break;
+    case "unsubscribe":
+      await handleUnsubscribe(ctx);
+      return;
+    case "subscribe":
+      await handleSubscribe(ctx);
+      return;
     case "back":
       await showMainSettings(ctx);
       break;
@@ -51,15 +57,20 @@ async function handleSettingsCallback(
 async function showMainSettings(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser!;
 
+  const subscriptionStatus = user.is_subscribed
+    ? "✅ Subscribed to daily messages"
+    : "⏸️ Daily messages paused";
+
   await ctx.editMessageText(
     `⚙️ **Your Settings**
 
 • Daily prompt time: ${user.preferred_hour}:00 ${user.timezone}
 • Difficulty level: ${user.difficulty}
 • Timezone: ${user.timezone}
+• ${subscriptionStatus}
 
 What would you like to change?`,
-    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard() }
+    { parse_mode: "Markdown", reply_markup: createSettingsKeyboard(user.is_subscribed) }
   );
 }
 
@@ -164,4 +175,36 @@ async function handleTimezoneCallback(
   await ctx.editMessageText(
     `✅ Timezone set to ${timezone}\n\nUse /settings to make more changes.`
   );
+}
+
+async function handleUnsubscribe(ctx: BotContext): Promise<void> {
+  const chatId = ctx.chatId!;
+
+  await updateUserSettings(chatId, { is_subscribed: false });
+
+  await ctx.answerCallbackQuery("Daily messages paused");
+  await ctx.editMessageText(
+    `⏸️ **Daily messages paused**
+
+You won't receive daily practice prompts anymore.
+
+You can still use /new anytime to get a practice prompt.
+
+Use /settings to resume daily messages when you're ready.`
+  , { parse_mode: "Markdown" });
+}
+
+async function handleSubscribe(ctx: BotContext): Promise<void> {
+  const chatId = ctx.chatId!;
+
+  await updateUserSettings(chatId, { is_subscribed: true });
+
+  await ctx.answerCallbackQuery("Daily messages resumed");
+  await ctx.editMessageText(
+    `🔔 **Daily messages resumed**
+
+You'll receive your daily practice prompt again!
+
+Use /settings to adjust your preferences.`
+  , { parse_mode: "Markdown" });
 }

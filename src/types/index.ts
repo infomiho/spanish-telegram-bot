@@ -13,6 +13,7 @@ export interface User {
   preferred_hour: number;
   timezone: string;
   difficulty: Difficulty;
+  is_subscribed: boolean;
   last_prompt: string | null;
   last_prompt_at: Date | null;
   created_at: Date;
@@ -27,6 +28,7 @@ export interface UpdateUserSettings {
   preferred_hour?: number;
   timezone?: string;
   difficulty?: Difficulty;
+  is_subscribed?: boolean;
 }
 
 export interface SpanishAnalysis {
