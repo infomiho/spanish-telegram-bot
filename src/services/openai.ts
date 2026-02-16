@@ -93,13 +93,13 @@ Student's Spanish Response: "${transcription}"`,
 }
 
 export async function generatePracticePrompt(
-  topic: string,
   difficulty: Difficulty
 ): Promise<string> {
   const openai = getOpenAIClient();
 
   const response = await openai.chat.completions.create({
     model: "gpt-5.2",
+    temperature: 1.2,
     messages: [
       {
         role: "system",
@@ -107,9 +107,7 @@ export async function generatePracticePrompt(
       },
       {
         role: "user",
-        content: `Use this topic as loose inspiration (you can diverge from it): "${topic}"
-
-Generate a role-play scenario prompt.`,
+        content: "Generate a role-play scenario prompt.",
       },
     ],
     response_format: promptGeneratorSchema,

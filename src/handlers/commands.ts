@@ -1,6 +1,5 @@
 import type { BotContext } from "../types/index.js";
 import { createUser, updateLastPrompt } from "../db/index.js";
-import { fetchRandomTopic } from "../services/topics.js";
 import { generatePracticePrompt } from "../services/openai.js";
 import { InlineKeyboard } from "grammy";
 import { createSettingsKeyboard } from "./shared.js";
@@ -41,8 +40,7 @@ export async function handleNew(ctx: BotContext): Promise<void> {
   await ctx.reply("Generating a new practice prompt for you...");
 
   try {
-    const topic = await fetchRandomTopic();
-    const prompt = await generatePracticePrompt(topic.text, user.difficulty);
+    const prompt = await generatePracticePrompt(user.difficulty);
 
     await updateLastPrompt(chatId, prompt);
 

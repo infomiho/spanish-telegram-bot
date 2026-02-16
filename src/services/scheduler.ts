@@ -2,7 +2,6 @@ import cron from "node-cron";
 import type { Bot } from "grammy";
 import type { BotContext } from "../types/index.js";
 import { getUsersDueForPrompt, updateLastPrompt } from "../db/index.js";
-import { fetchRandomTopic } from "./topics.js";
 import { generatePracticePrompt } from "./openai.js";
 
 let scheduledTask: cron.ScheduledTask | null = null;
@@ -52,8 +51,7 @@ async function sendDailyPrompts(bot: Bot<BotContext>): Promise<void> {
 
     for (const user of users) {
       try {
-        const topic = await fetchRandomTopic();
-        const prompt = await generatePracticePrompt(topic.text, user.difficulty);
+        const prompt = await generatePracticePrompt(user.difficulty);
 
         await updateLastPrompt(user.chat_id, prompt);
 
